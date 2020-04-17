@@ -142,6 +142,11 @@ public class GrammarAnalysis {
 
     void print() {
         try {
+            if (!flag) {
+                System.out.println(String.format("expression:%s, analysis failed!",
+                        expression));
+                return;
+            }
             analysis.forEach(x -> System.out.println(String.format("\t%s", x)));
         } finally {
             flag = false;
