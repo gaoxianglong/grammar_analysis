@@ -84,7 +84,14 @@ public class GrammarAnalysis {
     }
 
     GrammarAnalysis parse() {
-        parse("S");//从文法开始符号开始
+        if (!analysis.isEmpty()) {
+            analysis.clear();
+        }
+        try {
+            parse("S");//从文法开始符号开始
+        } finally {
+            flag = false;
+        }
         return this;
     }
 
@@ -106,14 +113,13 @@ public class GrammarAnalysis {
         //最左推导，比如:id+id, E => E + E => id + E => id + id
         for (var i = 0; i < production.length(); i++) {
             var non_terminal = String.valueOf(production.charAt(i));//从左到右依次获取终结符
-            if (non_terminals.contains(non_terminal)) {
-                for (var body : productionMap.get(non_terminal)) {//获取对应的相关产生式体
-                    var temp = production.replaceFirst(non_terminal, body);//将非终结符依次替换为产生式体
-                    analysis.add(String.format("%s\t=>\t%s", production, temp));
-                    parse(temp);
-                    if (flag) return;
-                    analysis.removeLast();
-                }
+            if (!non_terminals.contains(non_terminal)) continue;
+            for (var body : productionMap.get(non_terminal)) {//获取对应的相关产生式体
+                var temp = production.replaceFirst(non_terminal, body);//将非终结符依次替换为产生式体
+                analysis.add(String.format("%s\t=>\t%s", production, temp));
+                parse(temp);
+                if (flag) return;
+                analysis.removeLast();
             }
         }
     }
@@ -141,17 +147,12 @@ public class GrammarAnalysis {
     }
 
     void print() {
-        try {
-            if (!flag) {
-                System.out.println(String.format("expression:%s, analysis failed!",
-                        expression));
-                return;
-            }
-            analysis.forEach(x -> System.out.println(String.format("\t%s", x)));
-        } finally {
-            flag = false;
-            analysis.clear();
+        if (analysis.isEmpty()) {
+            System.out.println(String.format("expression:%s, analysis failed!",
+                    expression));
+            return;
         }
+        analysis.forEach(x -> System.out.println(String.format("\t%s", x)));
     }
 
     public static void main(String[] args) {
